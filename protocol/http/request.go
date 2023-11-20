@@ -25,12 +25,13 @@ var defaultUserAgent = fmt.Sprintf("scenarigo/%s", version.String())
 
 // Request represents a request.
 type Request struct {
-	Client string      `yaml:"client,omitempty"`
-	Method string      `yaml:"method,omitempty"`
-	URL    string      `yaml:"url,omitempty"`
-	Query  interface{} `yaml:"query,omitempty"`
-	Header interface{} `yaml:"header,omitempty"`
-	Body   interface{} `yaml:"body,omitempty"`
+	Client             string      `yaml:"client,omitempty"`
+	Method             string      `yaml:"method,omitempty"`
+	URL                string      `yaml:"url,omitempty"`
+	Query              interface{} `yaml:"query,omitempty"`
+	Header             interface{} `yaml:"header,omitempty"`
+	Body               interface{} `yaml:"body,omitempty"`
+	InsecureSkipVerify bool        `yaml:"insecure_skip_verify"`
 }
 
 type response struct {
@@ -114,10 +115,17 @@ func (r *Request) Invoke(ctx *context.Context) (*context.Context, interface{}, e
 }
 
 func (r *Request) buildClient(ctx *context.Context) (*http.Client, error) {
+	defaultTransport, ok := http.DefaultTransport.(*http.Transport)
+	if !ok {
+		return nil, errors.New("client cannot cast to *http.Transport")
+	}
+	if r.InsecureSkipVerify {
+		defaultTransport.TLSClientConfig.InsecureSkipVerify = true
+	}
 	client := &http.Client{
 		Transport: &charsetRoundTripper{
 			base: &encodingRoundTripper{
-				base: http.DefaultTransport,
+				base: defaultTransport,
 			},
 		},
 	}
