@@ -1,4 +1,5 @@
-module github.com/zoncoen/scenarigo
+//module github.com/zoncoen/scenarigo
+module github.com/koooyooo/scenarigo
 
 go 1.20
 
